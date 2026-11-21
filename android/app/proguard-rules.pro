@@ -1,0 +1,3 @@
+-keepattributes Signature,*Annotation*,InnerClasses,EnclosingMethod,Exceptions
+-keep class io.flutter.plugins.firebase.** { *; }
+-dontwarn com.google.android.play.core.**

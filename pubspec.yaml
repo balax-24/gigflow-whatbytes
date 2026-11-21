@@ -1,0 +1,46 @@
+name: gigflow
+description: "GigFlow — offline-first task manager for gig workers."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_bloc: ^9.1.1
+  bloc: ^9.2.1
+  bloc_concurrency: ^0.3.0
+  equatable: ^3.0.0
+
+  # Firebase
+  firebase_core: ^5.2.0
+  firebase_auth: ^7.1.0
+  cloud_firestore: ^7.2.0
+
+  # Local prefs & connectivity
+  shared_preferences: ^2.5.6
+  connectivity_plus: ^7.3.2
+
+  # Routing & DI
+  go_router: ^18.1.4
+  get_it: ^9.3.0
+
+  # Formatting
+  intl: ^0.20.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  bloc_test: ^10.0.0
+  mocktail: ^1.0.5
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.8
+
+flutter:
+  uses-material-design: true

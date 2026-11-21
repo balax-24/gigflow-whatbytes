@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "595724452129",
+    "project_id": "gigflow-whatbytes",
+    "storage_bucket": "gigflow-whatbytes.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595724452129:android:f8cf66deb2d682457b3e60",
+        "android_client_info": {
+          "package_name": "dev.gigflow.gigflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCugGwaF4QQ_UjvNKbOOBeVFkYicb_WKaU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
