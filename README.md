@@ -5,6 +5,12 @@ An offline-first Flutter task manager for delivery riders, rideshare drivers and
 - **Android Release APK:** see the [GitHub Releases](../../releases) page (`gigflow-v1.0.0-universal.apk`)
 - **Walkthrough video:** _add link here_
 
+## Screenshots (release build, Samsung Galaxy SM-E346B, Android 16)
+
+| Login | Dashboard (dark) | Priority filter | Create / edit task | Dashboard (light) |
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/login.png" width="180"> | <img src="docs/screenshots/dashboard.png" width="180"> | <img src="docs/screenshots/filters.png" width="180"> | <img src="docs/screenshots/editor.png" width="180"> | <img src="docs/screenshots/dashboard_light.png" width="180"> |
+
 ---
 
 ## Features
@@ -76,9 +82,33 @@ The repo ships with the Firebase client config for the demo project (`lib/fireba
 2. Run `flutterfire configure --platforms=android,ios`.
 3. Run `firebase deploy --only firestore:rules`.
 
+## Verified on a real device
+
+The **release APK** (R8-minified) was exercised end-to-end on a Samsung Galaxy SM-E346B (Android 16) against the live Firebase project:
+
+| Scenario | Result |
+|---|---|
+| Cold start → login screen; empty-form and bad-email validation | ✅ |
+| Wrong credentials → "Incorrect email or password…" (Firebase `invalid-credential`) | ✅ |
+| Register → auto-redirect to dashboard; kill & relaunch stays signed in | ✅ |
+| Create tasks with presets/priorities → instant, sorted earliest → latest, grouped TODAY/TOMORROW | ✅ |
+| Toggle complete → strike-through, shift progress bar + high-priority counter update | ✅ |
+| Filters: Completed / Incomplete + High (empty state + Clear) / search "airport" | ✅ |
+| Swipe delete → Undo restores in place; SnackBar auto-hides after 4 s | ✅ |
+| **Airplane Mode:** create + edit offline (no spinner), "Offline" indicator, kill & relaunch offline → data intact | ✅ |
+| Reconnect → syncs; **wipe app data + fresh login → all offline edits come back from Firestore** | ✅ |
+| Dark ↔ light theme (persisted), logout confirmation, no error flash after sign-out | ✅ |
+
+Issues found during this pass and fixed (each now covered by a regression test):
+- a stale login error carried over to the register screen
+- keyboard "Next" focused the password-visibility icon
+- the editor's Save button sat under the Android 15+ edge-to-edge navigation bar
+- light-mode chip labels were lost after the animated theme switch
+- a preset chip lost its highlight after a minute
+
 ## Tests
 
-81 automated tests:
+84 automated tests:
 
 | Suite | Covers |
 |---|---|
@@ -91,10 +121,10 @@ The repo ships with the Firebase client config for the demo project (`lib/fireba
 | `auth_bloc_test` | Stream mapping, submit states, failure, double-submit dropped, logout |
 | `task_bloc_test` | Create/update/toggle/delete/undo, optimistic hide, pruning, stream & write errors |
 | `task_filter_cubit_test` | Persistence + reset |
-| `login_screen_test` / `register_screen_test` | Validation, error banner, visibility toggle, disabled CTA, a11y guidelines |
-| `dashboard_test` | **Blur budget** (no blur in tiles, ≤ 2 total), section order, empty states, offline pill, toggle |
+| `login_screen_test` / `register_screen_test` | Validation, error banner, stale-error clearing, keyboard focus order, visibility toggle, disabled CTA, a11y guidelines |
+| `dashboard_test` | **Blur budget** (no blur in tiles, ≤ 2 total), section order, empty states, offline pill, toggle, light-theme chip legibility |
 
 ## Known limitations
 
 - iOS is code-complete and statically verified, but not device-tested (built on Windows, no macOS available).
-- Performance numbers are to be measured on a physical device (`flutter run --profile`); long-press the greeting in a debug/profile build to seed 60 demo tasks.
+- Long-press the greeting in a debug/profile build to seed 60 demo tasks for profiling.

@@ -20,7 +20,7 @@ SHA-256 checksums are in `SHA256SUMS.txt`.
 - A Liquid Glass UI with dark and light themes that meet WCAG AA contrast, and at most 2 live blurs while scrolling
 
 ## Quality
-- 81 automated tests (unit, BLoC and widget, including a blur-budget performance contract and accessibility guidelines)
+- 84 automated tests (unit, BLoC and widget, including a blur-budget performance contract and accessibility guidelines)
 - `flutter analyze --fatal-infos` is clean
 - Release build has R8 minification and resource shrinking, and the INTERNET permission is verified in CI
 
