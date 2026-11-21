@@ -12,7 +12,28 @@
           "package_name": "dev.gigflow.gigflow"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "595724452129-cje94dv7j517591bbvvdqg83mb5iumsv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.gigflow.gigflow",
+            "certificate_hash": "316a3d15996e5ec77702d8c6cdc5ed4147656646"
+          }
+        },
+        {
+          "client_id": "595724452129-f2miloccserqb4f57rkvbgrqp9oap3cg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.gigflow.gigflow",
+            "certificate_hash": "f2319a1d8ac7c13f8294722ef085c43660a828b3"
+          }
+        },
+        {
+          "client_id": "595724452129-bpso55g5l7rcpl0t96o60brlri927vj1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCugGwaF4QQ_UjvNKbOOBeVFkYicb_WKaU"
@@ -20,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "595724452129-bpso55g5l7rcpl0t96o60brlri927vj1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "595724452129-l3ds198uauk1ese6i4r8pb2h108a3uab.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "dev.gigflow.gigflow"
+              }
+            }
+          ]
         }
       }
     }

@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/services.dart' show PlatformException;
 
 import 'package:gigflow/core/error/failures.dart';
 import 'package:gigflow/core/error/firebase_error_mapper.dart';
@@ -61,12 +63,21 @@ class FirebaseAuthRepository implements AuthRepository {
         ..setCustomParameters({'prompt': 'select_account'});
       return _toUser((await _auth.signInWithProvider(provider)).user);
     } on FirebaseAuthException catch (e) {
+      debugPrint('GigFlow Google sign-in failed: ${e.code}');
       if (FirebaseErrorMapper.isUserCancellation(e.code)) return null;
       throw AuthFailure(
         FirebaseErrorMapper.mapAuthErrorCode(e.code),
         code: e.code,
       );
-    } catch (_) {
+    } on PlatformException catch (e) {
+      debugPrint('GigFlow Google sign-in platform error: ${e.code}');
+      if (FirebaseErrorMapper.isUserCancellation(e.code)) return null;
+      throw AuthFailure(
+        FirebaseErrorMapper.mapAuthErrorCode(e.code),
+        code: e.code,
+      );
+    } catch (e) {
+      debugPrint('GigFlow Google sign-in unexpected error: ${e.runtimeType}');
       throw const AuthFailure(FirebaseErrorMapper.genericAuth);
     }
   }

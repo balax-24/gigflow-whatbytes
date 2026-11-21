@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:gigflow/app/theme/liquid_glass_theme.dart';
+import 'package:gigflow/core/services/connectivity_cubit.dart';
 import 'package:gigflow/core/utils/validators.dart';
 import 'package:gigflow/core/widgets/liquid_glass_button.dart';
 import 'package:gigflow/core/widgets/liquid_glass_chrome.dart';
@@ -69,9 +70,7 @@ class SocialSignInSection extends StatelessWidget {
         const SizedBox(height: 14),
         OutlinedButton(
           key: googleKey,
-          onPressed: enabled
-              ? () => context.read<AuthBloc>().add(const AuthGoogleRequested())
-              : null,
+          onPressed: enabled ? () => _startGoogle(context) : null,
           style: OutlinedButton.styleFrom(
             minimumSize: const Size.fromHeight(52),
             shape: const StadiumBorder(),
@@ -97,6 +96,23 @@ class SocialSignInSection extends StatelessWidget {
       ],
     );
   }
+}
+
+void _startGoogle(BuildContext context) {
+  final online = context.read<ConnectivityCubit?>()?.state ?? true;
+  if (!online) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text(
+            "You're offline. Connect to the internet to continue with Google.",
+          ),
+        ),
+      );
+    return;
+  }
+  context.read<AuthBloc>().add(const AuthGoogleRequested());
 }
 
 /// Simple four-colour "G" badge (no bundled trademark asset).
