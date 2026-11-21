@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:gigflow/core/error/failures.dart';
@@ -27,7 +29,22 @@ class FirestoreTaskRepository implements TaskRepository {
           isFromCache: snap.metadata.isFromCache,
         ),
       )
+      .transform(_endOnSignOut)
       .distinct();
+
+  /// After sign-out Firestore fails the old listener with
+  /// `permission-denied`. That is an expected end-of-session, not an error
+  /// to show the user, so the stream simply completes.
+  static final _endOnSignOut =
+      StreamTransformer<TaskFeed, TaskFeed>.fromHandlers(
+        handleError: (error, stackTrace, sink) {
+          if (error is FirebaseException && error.code == 'permission-denied') {
+            sink.close();
+          } else {
+            sink.addError(error, stackTrace);
+          }
+        },
+      );
 
   @override
   String newTaskId(String userId) => _tasks(userId).doc().id;
