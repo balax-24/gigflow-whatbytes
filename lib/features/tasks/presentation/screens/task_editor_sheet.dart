@@ -57,6 +57,9 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
   late DateTime _due;
   late TaskPriority _priority;
 
+  /// Preset the user picked; null after a custom pick or for existing tasks.
+  DuePreset? _preset;
+
   bool get _isEdit => widget.initialTask != null;
 
   @override
@@ -66,6 +69,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
     _title = TextEditingController(text: t?.title ?? '')
       ..addListener(_onTitleChanged);
     _description = TextEditingController(text: t?.description ?? '');
+    _preset = t == null ? DuePreset.inOneHour : null;
     _due =
         t?.dueDate ??
         QuickDuePresets.resolve(DuePreset.inOneHour, DateTime.now());
@@ -133,7 +137,10 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
         ? await _pickCupertino()
         : await _pickMaterial();
     if (picked != null && mounted) {
-      setState(() => _due = normalizeToMinute(picked));
+      setState(() {
+        _due = normalizeToMinute(picked);
+        _preset = null;
+      });
     }
   }
 
@@ -202,7 +209,14 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
       ),
       child: LiquidGlassChrome(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+        // Android 15+ is edge-to-edge: keep actions above the system nav
+        // bar (paddingOf is 0 while the keyboard is open).
+        padding: EdgeInsets.fromLTRB(
+          20,
+          10,
+          20,
+          16 + MediaQuery.paddingOf(context).bottom,
+        ),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -256,14 +270,16 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                   runSpacing: 4,
                   children: [
                     for (final p in presets)
-                      ChoiceChip(
-                        label: Text(QuickDuePresets.label(p)),
-                        selected: QuickDuePresets.resolve(p, now) == _due,
-                        onSelected: (_) {
+                      SelectableChip(
+                        key: ValueKey('preset-${p.name}'),
+                        label: QuickDuePresets.label(p),
+                        selected: _preset == p,
+                        onSelected: () {
                           HapticFeedback.selectionClick();
-                          setState(
-                            () => _due = QuickDuePresets.resolve(p, now),
-                          );
+                          setState(() {
+                            _preset = p;
+                            _due = QuickDuePresets.resolve(p, now);
+                          });
                         },
                       ),
                     ActionChip(
@@ -299,21 +315,13 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                   spacing: 8,
                   children: [
                     for (final p in TaskPriority.values.reversed)
-                      ChoiceChip(
+                      SelectableChip(
                         key: ValueKey('editor-priority-${p.name}'),
-                        avatar: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: p.colorOf(context),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const SizedBox.square(dimension: 9),
-                        ),
-                        label: Text(p.label),
+                        label: p.label,
+                        dotColor: p.colorOf(context),
+                        fill: p.colorOf(context),
                         selected: _priority == p,
-                        selectedColor: p
-                            .colorOf(context)
-                            .withValues(alpha: 0.22),
-                        onSelected: (_) {
+                        onSelected: () {
                           HapticFeedback.selectionClick();
                           setState(() => _priority = p);
                         },

@@ -77,11 +77,14 @@ class PasswordVisibilityToggle extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    tooltip: obscured ? 'Show password' : 'Hide password',
-    icon: Icon(
-      obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+  // ExcludeFocus: keyboard "Next" must jump to the next field, not this icon.
+  Widget build(BuildContext context) => ExcludeFocus(
+    child: IconButton(
+      tooltip: obscured ? 'Show password' : 'Hide password',
+      icon: Icon(
+        obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+      ),
+      onPressed: onPressed,
     ),
-    onPressed: onPressed,
   );
 }

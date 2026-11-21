@@ -26,6 +26,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscured = true;
 
   @override
+  void initState() {
+    super.initState();
+    // Don't carry an error over from the register screen.
+    final bloc = context.read<AuthBloc>();
+    if (bloc.state.errorMessage != null) bloc.add(const AuthErrorCleared());
+  }
+
+  @override
   void dispose() {
     _email.dispose();
     _password.dispose();

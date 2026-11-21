@@ -2,6 +2,8 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gigflow/app/theme/app_colors.dart';
+import 'package:gigflow/app/theme/app_theme.dart';
 import 'package:gigflow/core/services/sync_status.dart';
 import 'package:gigflow/core/widgets/liquid_glass_card.dart';
 import 'package:gigflow/features/auth/domain/entities/app_user.dart';
@@ -138,6 +140,29 @@ void main() {
       resolveSyncStatus(online: true, hasPendingWrites: false),
       SyncStatus.synced,
     );
+  });
+
+  testWidgets('light theme: unselected filter chips use dark legible text', (
+    t,
+  ) async {
+    when(
+      () => tasks.state,
+    ).thenReturn(const TaskState(status: TaskLoadStatus.ready));
+    await t.pumpApp(
+      TaskDashboardScreen(clock: () => testNow),
+      authBloc: auth,
+      taskBloc: tasks,
+      filterCubit: filter,
+      theme: AppTheme.light(),
+    );
+    await t.pump();
+    final chip = t.widget<ChoiceChip>(
+      find.descendant(
+        of: find.byKey(const ValueKey('status-incomplete')),
+        matching: find.byType(ChoiceChip),
+      ),
+    );
+    expect(chip.labelStyle?.color, AppColors.lightTextPrimary);
   });
 
   testWidgets('tapping a checkbox dispatches toggle', (t) async {

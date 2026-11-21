@@ -103,11 +103,11 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                 child: _ChipRow(
                   children: [
                     for (final s in TaskStatusFilter.values)
-                      ChoiceChip(
+                      SelectableChip(
                         key: ValueKey('status-${s.name}'),
-                        label: Text(s.label),
+                        label: s.label,
                         selected: filter.status == s,
-                        onSelected: (_) {
+                        onSelected: () {
                           HapticFeedback.selectionClick();
                           onStatus(s);
                         },
@@ -120,28 +120,23 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                 height: _row * scale,
                 child: _ChipRow(
                   children: [
-                    ChoiceChip(
+                    SelectableChip(
                       key: const ValueKey('priority-all'),
-                      label: const Text('All priorities'),
+                      tooltip: 'All priorities',
+                      label: 'All',
                       selected: filter.priority == null,
-                      onSelected: (_) {
+                      onSelected: () {
                         HapticFeedback.selectionClick();
                         onPriority(null);
                       },
                     ),
                     for (final p in TaskPriority.values)
-                      ChoiceChip(
+                      SelectableChip(
                         key: ValueKey('priority-${p.name}'),
-                        avatar: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: p.colorOf(context),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const SizedBox.square(dimension: 8),
-                        ),
-                        label: Text(p.label),
+                        label: p.label,
+                        dotColor: p.colorOf(context),
                         selected: filter.priority == p,
-                        onSelected: (_) {
+                        onSelected: () {
                           HapticFeedback.selectionClick();
                           onPriority(p);
                         },

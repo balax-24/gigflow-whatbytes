@@ -64,13 +64,17 @@ abstract final class AppTheme {
       ),
       chipTheme: ChipThemeData(
         shape: const StadiumBorder(),
-        side: BorderSide(color: scheme.onSurface.withValues(alpha: 0.14)),
-        backgroundColor: scheme.onSurface.withValues(alpha: 0.05),
-        selectedColor: scheme.primary.withValues(alpha: 0.22),
+        // Plain (non-state) values only: state-based styles are dropped by
+        // ThemeData.lerp during the animated dark/light switch. Selected
+        // styling is applied per chip via selectableChipStyle().
+        side: BorderSide(color: scheme.onSurface.withValues(alpha: 0.18)),
+        backgroundColor: scheme.onSurface.withValues(alpha: 0.06),
+        selectedColor: scheme.primary,
+        checkmarkColor: scheme.onPrimary,
         labelStyle: TextStyle(
           color: scheme.onSurface,
-          fontSize: 12.5,
-          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
         ),
         showCheckmark: false,
       ),

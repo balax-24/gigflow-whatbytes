@@ -66,6 +66,23 @@ void main() {
     expect(find.text('Incorrect email or password.'), findsOneWidget);
   });
 
+  testWidgets('stale error from another screen is cleared on open', (t) async {
+    when(() => bloc.state).thenReturn(
+      const AuthState(status: AuthStatus.unauthenticated, errorMessage: 'old'),
+    );
+    await pump(t);
+    verify(() => bloc.add(const AuthErrorCleared())).called(1);
+  });
+
+  testWidgets('keyboard Next skips the visibility icon', (t) async {
+    await pump(t);
+    final toggle = find.byTooltip('Show password');
+    expect(
+      find.ancestor(of: toggle, matching: find.byType(ExcludeFocus)),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('password visibility toggles', (t) async {
     await pump(t);
     EditableText field() => t.widget<EditableText>(
