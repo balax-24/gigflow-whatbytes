@@ -1,38 +1,51 @@
 # GigFlow — Task Management for Gig Workers
 
-An offline-first Flutter task manager for delivery riders, rideshare drivers and shift freelancers. Built for the **Whatbytes Flutter Developer Intern** assignment with Firebase Authentication, Cloud Firestore (with local offline persistence), strict earliest-to-latest due-date sorting, priority + status filtering, and a performance-engineered **Liquid Glass** UI.
+An offline-first Flutter task manager for delivery riders, rideshare drivers and shift freelancers. Built for the **Whatbytes Flutter Developer Intern** assignment with Firebase Authentication (email/password + Google), Cloud Firestore with local offline persistence, strict earliest-to-latest due-date sorting, priority/status/category filtering, and a performance-engineered **Liquid Glass** UI.
 
-- **Android Release APK:** see the [GitHub Releases](../../releases) page (`gigflow-v1.0.0-universal.apk`)
-- **Walkthrough video:** _add link here_
+- **Android APK:** [GitHub Releases](../../releases/latest) → `gigflow-v1.1.0-universal.apk`
+- **Walkthrough video:** _optional, add link here_
 
-## Screenshots (release build, Samsung Galaxy SM-E346B, Android 16)
+## Screenshots (release build on a Samsung Galaxy SM-E346B, Android 16)
 
-| Login | Dashboard (dark) | Priority filter | Create / edit task | Dashboard (light) |
+| Onboarding | Login | Dashboard | Lavender theme |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/onboarding.png" width="190"> | <img src="docs/screenshots/login.png" width="190"> | <img src="docs/screenshots/dashboard.png" width="190"> | <img src="docs/screenshots/dashboard_lavender.png" width="190"> |
+
+| Create / edit task | Week strip + day filter | Category filter | Shift cleared 🎉 | Profile |
 | :---: | :---: | :---: | :---: | :---: |
-| <img src="docs/screenshots/login.png" width="180"> | <img src="docs/screenshots/dashboard.png" width="180"> | <img src="docs/screenshots/filters.png" width="180"> | <img src="docs/screenshots/editor.png" width="180"> | <img src="docs/screenshots/dashboard_light.png" width="180"> |
+| <img src="docs/screenshots/editor.png" width="150"> | <img src="docs/screenshots/week_strip.png" width="150"> | <img src="docs/screenshots/filters.png" width="150"> | <img src="docs/screenshots/celebration.png" width="150"> | <img src="docs/screenshots/profile.png" width="150"> |
 
 ---
 
 ## Features
 
-| Area | What you get |
+### Assignment requirements
+| Requirement | How GigFlow does it |
 |---|---|
-| **Auth** | Email/password register & login, persistent session (auto-login on relaunch), logout with confirmation, clear human-readable errors for every Firebase code (`invalid-credential`, `wrong-password`, `user-not-found`, `email-already-in-use`, `weak-password`, `invalid-email`, `too-many-requests`, `network-request-failed`, …), password visibility toggle, trimmed email, double-submit protection |
-| **Tasks** | Create, view, edit, delete (swipe or from editor) with 4-second **Undo**, one-tap complete/incomplete with haptics. Fields: `title`, `description`, `dueDate`, `priority` (low/medium/high), `isCompleted` |
-| **Offline** | Firestore disk persistence (`CACHE_SIZE_UNLIMITED`). Everything works in Airplane Mode and syncs automatically on reconnect; an **Offline / Syncing** indicator shows the real sync state |
-| **Filter & sort** | Priority (All/High/Medium/Low) × Status (All/Incomplete/Completed) × instant search; always sorted **earliest → latest** (ties: high priority first, then creation time). Grouped into OVERDUE/EARLIER, TODAY, TOMORROW, UPCOMING without ever breaking global order |
-| **Shift dashboard** | "X of Y done today" progress bar, overdue and open-high-priority counters, overdue badges per task |
-| **Quick due presets** | `+1 hr`, `Today 6 PM`, `Tomorrow 9 AM`, or a custom date/time (Cupertino picker on iOS, Material on Android) |
-| **UI** | Material 3, Dark "Obsidian Glass" and Light "Daylight Frost" themes (persisted), WCAG AA contrast, 48dp touch targets, safe areas, keyboard-safe sheets, responsive up to tablets (640px content column) |
+| **Register / login (Firebase email + password)** | Persistent session, logout with confirmation, password visibility toggle, trimmed email, double-submit protection |
+| **Error messages for invalid credentials** | Every Firebase code mapped to plain English (`invalid-credential`, `wrong-password`, `user-not-found`, `email-already-in-use`, `weak-password`, `too-many-requests`, `network-request-failed`, …) |
+| **Create, edit, delete, view tasks** | Bottom-sheet editor, swipe-left delete with 4-second **Undo**, tap to edit |
+| **Title, description, due date, priority** | Plus an emoji category; quick due presets (`+1 hr`, `Today 6 PM`, `Tomorrow 9 AM`, custom picker) |
+| **Stored on Firebase + local storage** | Cloud Firestore with unlimited offline cache; filters, theme and onboarding state persisted locally |
+| **Mark complete / incomplete** | One-tap checkbox or **swipe right**, with haptics |
+| **Filter by priority and status** | Plus category, a 7-day **week strip** day filter, and instant search |
+| **Sorted by due date (earliest → latest)** | Deterministic total order, grouped into OVERDUE · TODAY · TOMORROW · THIS WEEK · LATER without ever breaking that order |
+| **Clean, responsive Material UI on iOS & Android** | Material 3, safe areas, keyboard-safe sheets, 48dp touch targets, WCAG AA contrast in all three themes |
 
-## Reviewer quick install (Android)
+### Extras
+- **One-time onboarding** (3 slides) before login.
+- **Forgot password** sheet and a ✓ tick on valid emails.
+- **Continue with Google**: native account picker (Android Credential Manager) → Firebase.
+- **Relative due times** ("in 45m", "2h overdue") and a time-of-day greeting.
+- **Shift dashboard**: "X of Y done today" progress, overdue and open-high counters, **confetti + "Shift cleared 🎉"** when today's last task is done.
+- **Profile sheet** ("⋯"): stats, appearance picker, sign out.
+- **Three themes**: Obsidian (dark), Daylight (light), **Lavender**, all persisted.
+- **Offline indicator** ("Offline — changes are saved on this device" / "Syncing…").
 
-1. Download `gigflow-v1.0.0-universal.apk` from Releases.
-2. Open it on the phone (allow "Install unknown apps"), or install it over USB:
-   ```bash
-   adb install -r gigflow-v1.0.0-universal.apk
-   ```
-3. Register any email and password (at least 6 characters, with a letter and a number).
+## Reviewer quick install (Android 7.0+)
+
+1. Download `gigflow-v1.1.0-universal.apk` from [Releases](../../releases/latest) and open it on the phone (allow "Install unknown apps"), or run `adb install -r gigflow-v1.1.0-universal.apk`.
+2. Register with any email and a password of 6+ characters that includes a letter and a number, or tap **Continue with Google**.
 
 ## Architecture
 
@@ -40,30 +53,32 @@ Feature-first Clean Architecture with BLoC:
 
 ```text
 lib/
-├── app/          # MaterialApp.router, get_it DI, go_router auth guards, theme + ThemeCubit
-├── core/         # Error mapping, validators, connectivity/sync status, Liquid Glass widgets
+├── app/          # MaterialApp.router, get_it DI, go_router guards (onboarding → auth → tasks), themes
+├── core/         # Error mapping, validators, connectivity/sync status, OAuth config, glass widgets, confetti
 ├── dev/          # Demo data seeder (debug/profile builds only)
 └── features/
-    ├── auth/     # domain (AppUser, AuthRepository) → data (FirebaseAuth) → presentation (AuthBloc, screens)
-    └── tasks/    # domain (TaskEntity, TaskQueryEngine, DateGrouping, ShiftStats, presets)
+    ├── auth/     # domain (AppUser, AuthRepository) → data (FirebaseAuth + Google) → presentation (AuthBloc, onboarding/login/register)
+    └── tasks/    # domain (TaskEntity, TaskCategory, TaskQueryEngine, DateGrouping, ShiftStats, RelativeDue, presets)
                   # → data (TaskModel mapper, FirestoreTaskRepository, prefs)
-                  # → presentation (TaskBloc, TaskFilterCubit, dashboard, editor sheet)
+                  # → presentation (TaskBloc, TaskFilterCubit, dashboard, editor, week strip, profile)
 ```
 
 ### Key engineering decisions
 
-1. **Zero-lag Liquid Glass (2-tier rendering).** A real `BackdropFilter` blur is used only on chrome (the pinned header/filter dock, the floating "New Task" pill, the editor sheet and the auth card). That means **at most 2 live blurs while scrolling**. Every scrolling task card is a zero-blur "specular" card: a translucent gradient plus a custom-painted 1.2px refractive rim, with no clip, no `Opacity` and no `saveLayer`. A widget test enforces that no `BackdropFilter` ever appears inside a task tile.
-2. **Offline-first writes.** Firestore applies writes to the local cache immediately (latency compensation), but the returned future only completes on *server* acknowledgement. The UI therefore **never awaits writes**, so nothing hangs in Airplane Mode. Server rejections are surfaced as SnackBars. Timestamps are client-generated (never `serverTimestamp()`), so there are no null-timestamp crashes on pending local snapshots.
-3. **Deterministic sort + monotonic grouping.** `TaskQueryEngine` is a pure-Dart total order (`dueDate → priority → createdAt → id`). Sections are bucketed purely by time thresholds, so flattening the sections always equals the sorted list. A property test over 200 random tasks checks this.
-4. **Filtering in memory.** Firestore runs a single `orderBy('dueDate')` query (no composite indexes). Priority, status and search filters run locally, which makes them instant and lets them work offline.
-5. **Auth-driven routing.** `go_router` redirects are driven by `AuthBloc` status changes only (a distinct `(status, uid)` stream), and the router is created once and disposed by DI. `TaskBloc` is scoped to the `/tasks` route, so signing out closes its Firestore listener and no data leaks between accounts.
-6. **Tenant-isolated security rules.** `users/{uid}/tasks/{taskId}` is readable and writable only by its owner, with schema validation (`firestore.rules`).
+1. **Zero-lag Liquid Glass (2-tier rendering).** A real `BackdropFilter` blur is used only on chrome (the pinned header/filter dock, the "New Task" pill, sheets and the auth card), so there are at most 2 live blurs while scrolling. Task cards are zero-blur "specular" cards: a gradient plus a custom-painted rim, with no clip, no `Opacity` and no `saveLayer`. A widget test enforces "no blur inside a task tile".
+2. **Offline-first writes.** Firestore updates the local cache immediately; the UI never awaits server acknowledgement, so nothing hangs in Airplane Mode. Server rejections surface as SnackBars. Timestamps are client-generated, so there are no null `serverTimestamp()` crashes.
+3. **Deterministic sort + monotonic grouping.** A pure-Dart total order (`dueDate → priority → createdAt → id`). Sections are bucketed purely by time, so flattening them equals the sorted list (checked by a 200-task property test).
+4. **In-memory filtering.** Firestore runs a single `orderBy('dueDate')` query (no composite indexes). Priority, status, category, day and search filters run locally, so they're instant and work offline.
+5. **Auth-driven routing.** `go_router` redirects react only to `(status, uid)` changes. `TaskBloc` is scoped to the `/tasks` route, so signing out closes the Firestore listener and nothing leaks between accounts.
+6. **Native Google sign-in.** Native Google sign-in on Android avoids the browser-redirect flow, which breaks under Chrome storage partitioning ("missing initial state").
+7. **Theme-safe styling.** Chip colours are resolved inside theme-dependent contexts, so nothing goes stale during the animated theme switch (a bug found and fixed on a real device).
+8. **Secure, backward-compatible rules.** `users/{uid}/tasks/{taskId}` is owner-only with schema validation; the new `category` field is optional, so v1.0 clients keep working.
 
 ## Tech stack
 
-Flutter 3.47.5 (Dart 3.13) · `flutter_bloc` 9 + `bloc_concurrency` · `equatable` 3 · `firebase_core` 5 / `firebase_auth` 7 / `cloud_firestore` 7 · `go_router` 18 · `get_it` 9 · `shared_preferences` 2.5 (`SharedPreferencesWithCache`) · `connectivity_plus` 7 · `intl` · tests: `flutter_test`, `bloc_test` 10, `mocktail`.
+Flutter 3.47.5 (Dart 3.13) · `flutter_bloc` 9 + `bloc_concurrency` · `equatable` 3 · `firebase_core` 5 / `firebase_auth` 7 / `cloud_firestore` 7 · `google_sign_in` 7 · `go_router` 18 · `get_it` 9 · `shared_preferences` 2.5 · `connectivity_plus` 7 · `intl` · tests: `flutter_test`, `bloc_test` 10, `mocktail`.
 
-Android: minSdk 24, target/compile SDK 36, R8 minify + resource shrinking enabled. iOS: deployment target 15.0.
+Android: minSdk 24, target/compile SDK 36, R8 + resource shrinking, release-signed. iOS: deployment target 15.0.
 
 ## Run locally
 
@@ -74,57 +89,46 @@ flutter test
 flutter run
 ```
 
-The repo ships with the Firebase client config for the demo project (`lib/firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist`). These are public identifiers; access is enforced by `firestore.rules`.
+The repo ships the Firebase client config for the demo project (`lib/firebase_options.dart`, `google-services.json`, `GoogleService-Info.plist`). These are public identifiers; access is enforced by `firestore.rules`.
 
-### Use your own Firebase project
-
-1. Create a Firebase project, enable **Authentication → Email/Password**, and create a **Firestore** database.
-2. Run `flutterfire configure --platforms=android,ios`.
-3. Run `firebase deploy --only firestore:rules`.
-
-## Verified on a real device
-
-The **release APK** (R8-minified) was exercised end-to-end on a Samsung Galaxy SM-E346B (Android 16) against the live Firebase project:
-
-| Scenario | Result |
-|---|---|
-| Cold start → login screen; empty-form and bad-email validation | ✅ |
-| Wrong credentials → "Incorrect email or password…" (Firebase `invalid-credential`) | ✅ |
-| Register → auto-redirect to dashboard; kill & relaunch stays signed in | ✅ |
-| Create tasks with presets/priorities → instant, sorted earliest → latest, grouped TODAY/TOMORROW | ✅ |
-| Toggle complete → strike-through, shift progress bar + high-priority counter update | ✅ |
-| Filters: Completed / Incomplete + High (empty state + Clear) / search "airport" | ✅ |
-| Swipe delete → Undo restores in place; SnackBar auto-hides after 4 s | ✅ |
-| **Airplane Mode:** create + edit offline (no spinner), "Offline" indicator, kill & relaunch offline → data intact | ✅ |
-| Reconnect → syncs; **wipe app data + fresh login → all offline edits come back from Firestore** | ✅ |
-| Dark ↔ light theme (persisted), logout confirmation, no error flash after sign-out | ✅ |
-
-Issues found during this pass and fixed (each now covered by a regression test):
-- a stale login error carried over to the register screen
-- keyboard "Next" focused the password-visibility icon
-- the editor's Save button sat under the Android 15+ edge-to-edge navigation bar
-- light-mode chip labels were lost after the animated theme switch
-- a preset chip lost its highlight after a minute
+Release signing reads `android/key.properties` (gitignored). Without it, release builds fall back to the debug key, and Google sign-in then needs that key's SHA-1 registered in Firebase.
 
 ## Tests
 
-84 automated tests:
+**95 automated tests** (unit, BLoC, widget):
 
 | Suite | Covers |
 |---|---|
-| `firebase_error_mapper_test` | Every auth error code + fallback |
-| `validators_test` | Email, login/new/confirm password, task fields |
-| `task_query_engine_test` | Earliest→latest, priority/createdAt/id tie-breaks, each filter, combined filters, search, immutability |
-| `date_grouping_test` | Monotonic sections, boundaries, labels, 200-task property test |
-| `shift_and_presets_test` | Today window, overdue counts, preset availability & rollover |
+| `firebase_error_mapper_test`, `validators_test` | Every auth error code, all form validators |
+| `task_query_engine_test`, `new_features_test` | Sorting and tie-breaks, priority/status/category/day filters, search, relative due labels, greetings, category model round-trip and legacy docs |
+| `date_grouping_test`, `shift_and_presets_test` | Monotonic sections incl. This week/Later, boundaries, shift stats, celebration trigger, presets |
 | `task_model_test` | Firestore round-trip, pending (null) timestamps, malformed data |
-| `auth_bloc_test` | Stream mapping, submit states, failure, double-submit dropped, logout |
-| `task_bloc_test` | Create/update/toggle/delete/undo, optimistic hide, pruning, stream & write errors |
-| `task_filter_cubit_test` | Persistence + reset |
-| `login_screen_test` / `register_screen_test` | Validation, error banner, stale-error clearing, keyboard focus order, visibility toggle, disabled CTA, a11y guidelines |
-| `dashboard_test` | **Blur budget** (no blur in tiles, ≤ 2 total), section order, empty states, offline pill, toggle, light-theme chip legibility |
+| `auth_bloc_test`, `task_bloc_test`, `task_filter_cubit_test` | Auth flows + double-submit, CRUD/undo/pending-delete/errors, persisted filters and day toggling |
+| `login_screen_test`, `register_screen_test` | Validation, banners, stale-error clearing, keyboard focus order, a11y guidelines |
+| `dashboard_test` | Blur budget, section order, empty states, offline pill, light-theme legibility |
+
+## Verified on a real device
+
+The release APK was tested end-to-end on a Samsung Galaxy SM-E346B (Android 16) against the live Firebase project:
+- onboarding
+- email login/register and error messages
+- Google sign-in
+- create/edit/delete/undo
+- swipe to complete and the confetti celebration
+- priority, status, category, day and search filters
+- the Airplane Mode round-trip: offline edits survived an app restart, then came back from the server after wiping local data
+- all three themes
+- profile sheet and logout
+
+Issues found on the device were fixed, each with a regression test where practical:
+- Save button under the Android 15+ navigation bar
+- light-mode chip contrast after a theme switch
+- keyboard "Next" focusing the eye icon
+- stale login error on the register screen
+- Google browser-redirect failure
+- a narrow-screen Google button overflow
 
 ## Known limitations
 
-- iOS is code-complete and statically verified, but not device-tested (built on Windows, no macOS available).
+- iOS is code-complete and statically checked, but not device-tested (no macOS build host).
 - Long-press the greeting in a debug/profile build to seed 60 demo tasks for profiling.

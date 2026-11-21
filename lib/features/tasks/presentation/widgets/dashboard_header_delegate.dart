@@ -137,15 +137,20 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                       },
                     ),
                     for (final p in TaskPriority.values)
-                      SelectableChip(
+                      // Builder: resolve the colour in a context that
+                      // depends on Theme, so it updates when the theme
+                      // animates (delegate-level values would go stale).
+                      Builder(
                         key: ValueKey('priority-${p.name}'),
-                        label: p.label,
-                        dotColor: p.colorOf(context),
-                        selected: filter.priority == p,
-                        onSelected: () {
-                          HapticFeedback.selectionClick();
-                          onPriority(p);
-                        },
+                        builder: (context) => SelectableChip(
+                          label: p.label,
+                          dotColor: p.colorOf(context),
+                          selected: filter.priority == p,
+                          onSelected: () {
+                            HapticFeedback.selectionClick();
+                            onPriority(p);
+                          },
+                        ),
                       ),
                   ],
                 ),

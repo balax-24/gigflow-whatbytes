@@ -1,5 +1,7 @@
 abstract final class FirebaseErrorMapper {
   static const genericAuth = 'Authentication failed. Please try again.';
+  static const googleUnavailable =
+      "Google sign-in couldn't finish. Check your connection or use email and password.";
   static const badCredentials =
       'Incorrect email or password. Please check your credentials and try again.';
 
