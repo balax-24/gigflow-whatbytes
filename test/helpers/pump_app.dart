@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gigflow/app/theme/app_theme.dart';
+import 'package:gigflow/app/theme/app_theme_option.dart';
 import 'package:gigflow/app/theme/theme_cubit.dart';
 import 'package:gigflow/core/services/connectivity_cubit.dart';
 import 'package:gigflow/features/auth/presentation/bloc/auth_bloc.dart';
@@ -24,7 +25,7 @@ extension PumpApp on WidgetTester {
   }) async {
     final theme0 = themeCubit ?? MockThemeCubit();
     if (themeCubit == null) {
-      when(() => theme0.state).thenReturn(ThemeMode.dark);
+      when(() => theme0.state).thenReturn(AppThemeOption.dark);
     }
     final conn = connectivityCubit ?? MockConnectivityCubit();
     if (connectivityCubit == null) when(() => conn.state).thenReturn(true);

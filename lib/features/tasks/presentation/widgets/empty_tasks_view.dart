@@ -20,11 +20,13 @@ class EmptyTasksView extends StatelessWidget {
     final theme = Theme.of(context);
     final q = query.trim();
     final title = isFiltering
-        ? (q.isEmpty ? 'No tasks match your filters' : 'No tasks match “$q”')
-        : 'No tasks yet';
+        ? (q.isEmpty
+              ? 'No matches for these filters 🔍'
+              : 'Nothing matches “$q” 🔍')
+        : 'Nothing on your plate 🍃';
     final body = isFiltering
-        ? 'Try a different priority, status or search.'
-        : 'Tap + New Task to plan your shift.';
+        ? 'Try another priority, status, category or day.'
+        : 'Tap + New Task to plan your shift, or go grab a chai ☕';
     return Padding(
       padding: const EdgeInsets.only(top: 24),
       child: LiquidGlassCard(

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:gigflow/features/tasks/domain/enums/task_category.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
 
 class TaskEntity extends Equatable {
@@ -12,6 +13,7 @@ class TaskEntity extends Equatable {
     this.description = '',
     this.priority = TaskPriority.medium,
     this.isCompleted = false,
+    this.category = TaskCategory.general,
   });
 
   final String id;
@@ -20,6 +22,7 @@ class TaskEntity extends Equatable {
   final DateTime dueDate;
   final TaskPriority priority;
   final bool isCompleted;
+  final TaskCategory category;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -31,6 +34,7 @@ class TaskEntity extends Equatable {
     DateTime? dueDate,
     TaskPriority? priority,
     bool? isCompleted,
+    TaskCategory? category,
     DateTime? updatedAt,
   }) => TaskEntity(
     id: id,
@@ -39,6 +43,7 @@ class TaskEntity extends Equatable {
     dueDate: dueDate ?? this.dueDate,
     priority: priority ?? this.priority,
     isCompleted: isCompleted ?? this.isCompleted,
+    category: category ?? this.category,
     createdAt: createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -51,6 +56,7 @@ class TaskEntity extends Equatable {
     dueDate,
     priority,
     isCompleted,
+    category,
     createdAt,
     updatedAt,
   ];

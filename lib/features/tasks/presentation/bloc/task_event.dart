@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import 'package:gigflow/features/tasks/domain/entities/task_entity.dart';
+import 'package:gigflow/features/tasks/domain/enums/task_category.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
 
 sealed class TaskEvent extends Equatable {
@@ -20,15 +21,17 @@ final class TaskCreated extends TaskEvent {
     required this.description,
     required this.dueDate,
     required this.priority,
+    this.category = TaskCategory.general,
   });
 
   final String title;
   final String description;
   final DateTime dueDate;
   final TaskPriority priority;
+  final TaskCategory category;
 
   @override
-  List<Object?> get props => [title, description, dueDate, priority];
+  List<Object?> get props => [title, description, dueDate, priority, category];
 }
 
 final class TaskUpdated extends TaskEvent {

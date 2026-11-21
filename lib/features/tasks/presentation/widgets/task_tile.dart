@@ -5,6 +5,7 @@ import 'package:gigflow/app/theme/liquid_glass_theme.dart';
 import 'package:gigflow/core/widgets/liquid_glass_card.dart';
 import 'package:gigflow/features/tasks/domain/entities/task_entity.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
+import 'package:gigflow/features/tasks/domain/utils/relative_due.dart';
 import 'package:gigflow/features/tasks/presentation/bloc/task_bloc.dart';
 import 'package:gigflow/features/tasks/presentation/bloc/task_event.dart';
 import 'package:gigflow/features/tasks/presentation/widgets/priority_style.dart';
@@ -34,13 +35,36 @@ class TaskTile extends StatelessWidget {
     final priorityColor = task.priority.colorOf(context);
     final done = task.isCompleted;
     final dueText = _dueFormat.format(task.dueDate.toLocal());
+    final relative = RelativeDue.of(task.dueDate, now, completed: done);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Dismissible(
         key: ValueKey('task-${task.id}'),
-        direction: DismissDirection.endToStart,
-        background: _DeleteBackground(color: glass.priorityHigh),
+        // Swipe right = toggle complete (card snaps back), left = delete.
+        direction: DismissDirection.horizontal,
+        background: _SwipeBackground(
+          color: glass.complete,
+          icon: done ? Icons.undo_rounded : Icons.check_circle_rounded,
+          label: done ? 'Undo' : 'Done',
+          alignEnd: false,
+        ),
+        secondaryBackground: _SwipeBackground(
+          color: glass.priorityHigh,
+          icon: Icons.delete_outline_rounded,
+          label: 'Delete',
+          alignEnd: true,
+        ),
+        confirmDismiss: (direction) async {
+          if (direction == DismissDirection.startToEnd) {
+            await HapticFeedback.lightImpact();
+            if (context.mounted) {
+              context.read<TaskBloc>().add(TaskCompletionToggled(task));
+            }
+            return false;
+          }
+          return true;
+        },
         onDismissed: (_) => deleteWithUndo(
           bloc: context.read<TaskBloc>(),
           messenger: ScaffoldMessenger.of(context),
@@ -125,11 +149,25 @@ class TaskTile extends StatelessWidget {
                                     color: priorityColor,
                                     dot: true,
                                   ),
-                                  if (overdue)
+                                  _CategoryPill(
+                                    emoji: task.category.emoji,
+                                    label: task.category.label,
+                                  ),
+                                  if (relative != null)
                                     TagPill(
-                                      label: 'Overdue',
-                                      icon: Icons.warning_amber_rounded,
-                                      color: glass.overdue,
+                                      key: const ValueKey('relative-due'),
+                                      label: relative.label,
+                                      icon:
+                                          relative.urgency == DueUrgency.overdue
+                                          ? Icons.warning_amber_rounded
+                                          : Icons.timer_outlined,
+                                      color: switch (relative.urgency) {
+                                        DueUrgency.overdue => glass.overdue,
+                                        DueUrgency.soon =>
+                                          theme.colorScheme.primary,
+                                        DueUrgency.later =>
+                                          theme.colorScheme.onSurfaceVariant,
+                                      },
                                     ),
                                 ],
                               ),
@@ -212,31 +250,71 @@ class _CompletionCheckbox extends StatelessWidget {
   }
 }
 
-class _DeleteBackground extends StatelessWidget {
-  const _DeleteBackground({required this.color});
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({required this.emoji, required this.label});
+
+  final String emoji;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.onSurface.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: scheme.onSurface.withValues(alpha: 0.10)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        child: Text(
+          '$emoji $label',
+          style: TextStyle(
+            color: scheme.onSurface,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SwipeBackground extends StatelessWidget {
+  const _SwipeBackground({
+    required this.color,
+    required this.icon,
+    required this.label,
+    required this.alignEnd,
+  });
 
   final Color color;
+  final IconData icon;
+  final String label;
+  final bool alignEnd;
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(20),
       gradient: LinearGradient(
-        colors: [color.withValues(alpha: 0.05), color.withValues(alpha: 0.55)],
+        begin: alignEnd ? Alignment.centerLeft : Alignment.centerRight,
+        end: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
+        colors: [color.withValues(alpha: 0.05), color.withValues(alpha: 0.75)],
       ),
     ),
-    child: const Align(
-      alignment: Alignment.centerRight,
+    child: Align(
+      alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
-        padding: EdgeInsets.only(right: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.delete_outline_rounded, color: Colors.white),
-            SizedBox(width: 6),
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 6),
             Text(
-              'Delete',
-              style: TextStyle(
+              label,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),

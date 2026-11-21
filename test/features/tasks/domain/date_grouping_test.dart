@@ -39,6 +39,14 @@ void main() {
     );
     expect(
       DateGrouping.sectionFor(DateTime(2026, 11, 24), testNow),
+      TaskSection.thisWeek,
+    );
+    expect(
+      DateGrouping.sectionFor(DateTime(2026, 11, 28, 23, 59), testNow),
+      TaskSection.thisWeek,
+    );
+    expect(
+      DateGrouping.sectionFor(DateTime(2026, 11, 29), testNow),
       TaskSection.upcoming,
     );
     expect(

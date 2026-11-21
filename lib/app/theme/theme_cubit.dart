@@ -1,18 +1,21 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:gigflow/app/theme/app_theme_option.dart';
 import 'package:gigflow/features/tasks/data/datasources/local_preferences_datasource.dart';
 
-class ThemeCubit extends Cubit<ThemeMode> {
-  ThemeCubit(this._prefs) : super(_prefs.readThemeMode());
+class ThemeCubit extends Cubit<AppThemeOption> {
+  ThemeCubit(this._prefs) : super(_prefs.readThemeOption());
 
   final LocalPreferencesDataSource _prefs;
 
-  bool get isDark => state != ThemeMode.light;
+  bool get isDark => state == AppThemeOption.dark;
 
-  Future<void> toggle() async {
-    final next = isDark ? ThemeMode.light : ThemeMode.dark;
-    emit(next);
-    await _prefs.writeThemeMode(next);
+  Future<void> select(AppThemeOption option) async {
+    if (option == state) return;
+    emit(option);
+    await _prefs.writeThemeOption(option);
   }
+
+  /// Header shortcut: cycles Obsidian -> Daylight -> Lavender.
+  Future<void> cycle() => select(state.next);
 }

@@ -10,7 +10,9 @@ service cloud.firestore {
       let keys = ['title', 'description', 'dueDate', 'priority',
                   'isCompleted', 'createdAt', 'updatedAt'];
       return data.keys().hasAll(keys)
-          && data.keys().hasOnly(keys)
+          && data.keys().hasOnly(keys.concat(['category']))
+          && (!('category' in data)
+              || data.category in ['delivery', 'ride', 'errand', 'work', 'personal', 'general'])
           && data.title is string && data.title.size() > 0 && data.title.size() <= 200
           && data.description is string && data.description.size() <= 1000
           && data.dueDate is timestamp

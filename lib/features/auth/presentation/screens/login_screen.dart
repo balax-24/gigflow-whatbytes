@@ -5,6 +5,7 @@ import 'package:gigflow/core/widgets/liquid_glass_button.dart';
 import 'package:gigflow/core/widgets/liquid_glass_text_field.dart';
 import 'package:gigflow/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gigflow/features/auth/presentation/widgets/auth_error_banner.dart';
+import 'package:gigflow/features/auth/presentation/widgets/auth_extras.dart';
 import 'package:gigflow/features/auth/presentation/widgets/auth_layout.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +15,7 @@ class LoginScreen extends StatefulWidget {
   static const emailKey = ValueKey('login-email');
   static const passwordKey = ValueKey('login-password');
   static const submitKey = ValueKey('login-submit');
+  static const forgotKey = ValueKey('login-forgot');
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -66,14 +68,18 @@ class _LoginScreenState extends State<LoginScreen> {
       child: BlocBuilder<AuthBloc, AuthState>(
         buildWhen: (a, b) =>
             a.isSubmitting != b.isSubmitting ||
-            a.errorMessage != b.errorMessage,
+            a.errorMessage != b.errorMessage ||
+            a.infoMessage != b.infoMessage,
         builder: (context, state) => Form(
           key: _formKey,
           child: AutofillGroup(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AuthErrorBanner(message: state.errorMessage),
+                AuthErrorBanner(
+                  message: state.errorMessage,
+                  info: state.infoMessage,
+                ),
                 LiquidGlassTextField(
                   key: LoginScreen.emailKey,
                   controller: _email,
@@ -85,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   autocorrect: false,
                   validator: Validators.email,
                   onChanged: _clearError,
+                  suffix: EmailValidTick(controller: _email),
                 ),
                 const SizedBox(height: 14),
                 LiquidGlassTextField(
@@ -104,13 +111,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () => setState(() => _obscured = !_obscured),
                   ),
                 ),
-                const SizedBox(height: 22),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    key: LoginScreen.forgotKey,
+                    onPressed: state.isSubmitting
+                        ? null
+                        : () => showForgotPasswordSheet(context, _email.text),
+                    child: const Text('Forgot password?'),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 LiquidGlassButton(
                   key: LoginScreen.submitKey,
                   label: 'Sign In',
                   isLoading: state.isSubmitting,
                   onPressed: state.isSubmitting ? null : _submit,
                 ),
+                SocialSignInSection(enabled: !state.isSubmitting),
               ],
             ),
           ),

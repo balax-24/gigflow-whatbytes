@@ -110,7 +110,7 @@ void main() {
   testWidgets('empty state when no tasks', (t) async {
     await pump(t, const TaskState(status: TaskLoadStatus.ready));
     await t.pump();
-    expect(find.text('No tasks yet'), findsOneWidget);
+    expect(find.text('Nothing on your plate 🍃'), findsOneWidget);
   });
 
   testWidgets('filtered-empty state offers clear', (t) async {
@@ -119,7 +119,7 @@ void main() {
     );
     await pump(t, TaskState(status: TaskLoadStatus.ready, tasks: many));
     await t.pump();
-    expect(find.text('No tasks match “zzz”'), findsOneWidget);
+    expect(find.text('Nothing matches “zzz” 🔍'), findsOneWidget);
     expect(find.text('Clear search & filters'), findsOneWidget);
   });
 

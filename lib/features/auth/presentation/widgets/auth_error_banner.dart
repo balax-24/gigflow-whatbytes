@@ -2,27 +2,35 @@ import 'package:flutter/material.dart';
 
 import 'package:gigflow/app/theme/liquid_glass_theme.dart';
 
-/// Animated coral pill for auth failures. Announced by screen readers.
+/// Animated pill for auth feedback: coral for errors, green for info.
+/// Announced by screen readers.
 class AuthErrorBanner extends StatelessWidget {
-  const AuthErrorBanner({super.key, required this.message});
+  const AuthErrorBanner({super.key, required this.message, this.info});
 
   final String? message;
 
+  /// Shown (green) only when there is no error message.
+  final String? info;
+
   @override
   Widget build(BuildContext context) {
-    final color = context.glass.overdue;
+    final isError = message != null;
+    final text = message ?? info;
+    final color = isError ? context.glass.overdue : context.glass.complete;
     return AnimatedSize(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
       alignment: Alignment.topCenter,
-      child: message == null
+      child: text == null
           ? const SizedBox(width: double.infinity)
           : Padding(
               padding: const EdgeInsets.only(bottom: 14),
               child: Semantics(
                 liveRegion: true,
                 child: DecoratedBox(
-                  key: const ValueKey('auth-error-banner'),
+                  key: ValueKey(
+                    isError ? 'auth-error-banner' : 'auth-info-banner',
+                  ),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(16),
@@ -37,14 +45,16 @@ class AuthErrorBanner extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          Icons.error_outline_rounded,
+                          isError
+                              ? Icons.error_outline_rounded
+                              : Icons.mark_email_read_outlined,
                           color: color,
                           size: 20,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            message!,
+                            text,
                             style: TextStyle(
                               color: color,
                               fontWeight: FontWeight.w600,

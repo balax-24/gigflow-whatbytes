@@ -74,6 +74,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
           description: e.description.trim(),
           dueDate: normalizeToMinute(e.dueDate),
           priority: e.priority,
+          category: e.category,
           createdAt: now,
           updatedAt: now,
         ),

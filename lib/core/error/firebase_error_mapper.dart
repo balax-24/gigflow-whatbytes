@@ -24,6 +24,22 @@ abstract final class FirebaseErrorMapper {
       'No internet connection. Check your network and try again.',
     'operation-not-allowed' =>
       'Email/password sign-in is not enabled for this app.',
+    'account-exists-with-different-credential' =>
+      'This email already uses password sign-in. Sign in with your password instead.',
+    'popup-blocked' || 'web-context-already-presented' =>
+      'Google sign-in could not open. Please try again.',
+    'provider-disabled' || 'invalid-oauth-client-id' || 'app-not-authorized' =>
+      'Google sign-in is not available right now. Use email and password.',
     _ => genericAuth,
   };
+
+  /// User closed the Google sheet/browser: not an error worth showing.
+  static bool isUserCancellation(String code) => const {
+    'canceled',
+    'cancelled',
+    'web-context-canceled',
+    'web-context-cancelled',
+    'popup-closed-by-user',
+    'user-cancelled',
+  }.contains(code);
 }

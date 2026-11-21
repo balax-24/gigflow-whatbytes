@@ -31,6 +31,19 @@ final class AuthRegisterSubmitted extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+final class AuthPasswordResetRequested extends AuthEvent {
+  const AuthPasswordResetRequested(this.email);
+
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+}
+
+final class AuthGoogleRequested extends AuthEvent {
+  const AuthGoogleRequested();
+}
+
 final class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();
 }

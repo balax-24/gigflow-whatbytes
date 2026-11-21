@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gigflow/app/theme/app_theme.dart';
+import 'package:gigflow/app/theme/app_theme_option.dart';
 import 'package:gigflow/app/theme/theme_cubit.dart';
 import 'package:gigflow/core/services/connectivity_cubit.dart';
 import 'package:gigflow/core/widgets/ambient_mesh_background.dart';
@@ -39,13 +40,15 @@ class GigFlowApp extends StatelessWidget {
           BlocProvider<TaskFilterCubit>.value(value: filterCubit),
           BlocProvider<ConnectivityCubit>.value(value: connectivityCubit),
         ],
-        child: BlocBuilder<ThemeCubit, ThemeMode>(
-          builder: (context, mode) => MaterialApp.router(
+        child: BlocBuilder<ThemeCubit, AppThemeOption>(
+          builder: (context, option) => MaterialApp.router(
             title: 'GigFlow',
             debugShowCheckedModeBanner: false,
-            theme: AppTheme.light(),
+            theme: option == AppThemeOption.lavender
+                ? AppTheme.lavender()
+                : AppTheme.light(),
             darkTheme: AppTheme.dark(),
-            themeMode: mode,
+            themeMode: option.mode,
             routerConfig: router,
             builder: (context, child) =>
                 AmbientMeshBackground(child: child ?? const SizedBox.shrink()),

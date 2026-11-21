@@ -51,6 +51,16 @@ final class ShiftStats extends Equatable {
     );
   }
 
+  bool get isCleared => todayTotal > 0 && todayDone == todayTotal;
+
+  /// True when the user just finished the last open task due today
+  /// (not on initial load, and not by deleting the last open task).
+  static bool justCleared(ShiftStats before, ShiftStats after) =>
+      !before.isCleared &&
+      before.todayTotal > 0 &&
+      after.isCleared &&
+      after.todayDone > before.todayDone;
+
   @override
   List<Object?> get props => [todayTotal, todayDone, overdue, highOpen];
 }

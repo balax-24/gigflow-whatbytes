@@ -5,6 +5,7 @@ import 'package:gigflow/core/widgets/liquid_glass_button.dart';
 import 'package:gigflow/core/widgets/liquid_glass_text_field.dart';
 import 'package:gigflow/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gigflow/features/auth/presentation/widgets/auth_error_banner.dart';
+import 'package:gigflow/features/auth/presentation/widgets/auth_extras.dart';
 import 'package:gigflow/features/auth/presentation/widgets/auth_layout.dart';
 import 'package:go_router/go_router.dart';
 
@@ -95,6 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   autocorrect: false,
                   validator: Validators.email,
                   onChanged: _clearError,
+                  suffix: EmailValidTick(controller: _email),
                 ),
                 const SizedBox(height: 14),
                 LiquidGlassTextField(
@@ -133,6 +135,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   isLoading: state.isSubmitting,
                   onPressed: state.isSubmitting ? null : _submit,
                 ),
+                SocialSignInSection(enabled: !state.isSubmitting),
               ],
             ),
           ),

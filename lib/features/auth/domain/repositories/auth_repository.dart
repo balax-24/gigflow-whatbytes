@@ -17,5 +17,12 @@ abstract interface class AuthRepository {
     required String password,
   });
 
+  /// Sends a password-reset email. Throws AuthFailure with a user-facing message.
+  Future<void> sendPasswordReset({required String email});
+
+  /// Google sign-in via Firebase's provider flow.
+  /// Returns null if the user cancelled. Throws AuthFailure on errors.
+  Future<AppUser?> signInWithGoogle();
+
   Future<void> signOut();
 }

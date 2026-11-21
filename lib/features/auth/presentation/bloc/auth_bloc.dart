@@ -22,8 +22,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSubscriptionRequested>(_onSubscribe, transformer: restartable());
     on<AuthLoginSubmitted>(_onLogin, transformer: droppable());
     on<AuthRegisterSubmitted>(_onRegister, transformer: droppable());
+    on<AuthPasswordResetRequested>(_onReset, transformer: droppable());
+    on<AuthGoogleRequested>(_onGoogle, transformer: droppable());
     on<AuthLogoutRequested>(_onLogout, transformer: droppable());
-    on<AuthErrorCleared>((_, emit) => emit(state.copyWith(clearError: true)));
+    on<AuthErrorCleared>(
+      (_, emit) => emit(state.copyWith(clearError: true, clearInfo: true)),
+    );
   }
 
   final AuthRepository _repository;
@@ -56,11 +60,42 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
 
+  Future<void> _onReset(
+    AuthPasswordResetRequested e,
+    Emitter<AuthState> emit,
+  ) async {
+    final email = e.email.trim();
+    emit(state.copyWith(isSubmitting: true, clearError: true, clearInfo: true));
+    try {
+      await _repository.sendPasswordReset(email: email);
+      // Privacy-friendly copy (no account enumeration).
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+          infoMessage:
+              'If an account exists for $email, a reset link is on its way. Check your inbox.',
+        ),
+      );
+    } on AuthFailure catch (failure) {
+      emit(state.copyWith(isSubmitting: false, errorMessage: failure.message));
+    }
+  }
+
+  Future<void> _onGoogle(AuthGoogleRequested e, Emitter<AuthState> emit) async {
+    emit(state.copyWith(isSubmitting: true, clearError: true, clearInfo: true));
+    try {
+      await _repository.signInWithGoogle(); // null => user cancelled
+      emit(state.copyWith(isSubmitting: false));
+    } on AuthFailure catch (failure) {
+      emit(state.copyWith(isSubmitting: false, errorMessage: failure.message));
+    }
+  }
+
   Future<void> _submit(
     Emitter<AuthState> emit,
     Future<AppUser> Function() action,
   ) async {
-    emit(state.copyWith(isSubmitting: true, clearError: true));
+    emit(state.copyWith(isSubmitting: true, clearError: true, clearInfo: true));
     try {
       await action(); // status change arrives via authStateChanges
       emit(state.copyWith(isSubmitting: false));

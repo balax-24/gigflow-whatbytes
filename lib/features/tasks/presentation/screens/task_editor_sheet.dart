@@ -7,6 +7,7 @@ import 'package:gigflow/core/widgets/liquid_glass_button.dart';
 import 'package:gigflow/core/widgets/liquid_glass_chrome.dart';
 import 'package:gigflow/core/widgets/liquid_glass_text_field.dart';
 import 'package:gigflow/features/tasks/domain/entities/task_entity.dart';
+import 'package:gigflow/features/tasks/domain/enums/task_category.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
 import 'package:gigflow/features/tasks/domain/utils/quick_due_presets.dart';
 import 'package:gigflow/features/tasks/domain/utils/task_query_engine.dart';
@@ -56,6 +57,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
   late final TextEditingController _description;
   late DateTime _due;
   late TaskPriority _priority;
+  late TaskCategory _category;
 
   /// Preset the user picked; null after a custom pick or for existing tasks.
   DuePreset? _preset;
@@ -74,6 +76,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
         t?.dueDate ??
         QuickDuePresets.resolve(DuePreset.inOneHour, DateTime.now());
     _priority = t?.priority ?? TaskPriority.medium;
+    _category = t?.category ?? TaskCategory.general;
   }
 
   void _onTitleChanged() => setState(() {});
@@ -100,6 +103,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
           description: _description.text,
           dueDate: _due,
           priority: _priority,
+          category: _category,
         ),
       );
     } else {
@@ -110,6 +114,7 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
             description: _description.text,
             dueDate: _due,
             priority: _priority,
+            category: _category,
           ),
         ),
       );
@@ -306,6 +311,25 @@ class _TaskEditorSheetState extends State<TaskEditorSheet> {
                         ),
                       ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text('Category', style: theme.textTheme.labelMedium),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    for (final c in TaskCategory.values)
+                      SelectableChip(
+                        key: ValueKey('editor-category-${c.name}'),
+                        label: '${c.emoji} ${c.label}',
+                        selected: _category == c,
+                        onSelected: () {
+                          HapticFeedback.selectionClick();
+                          setState(() => _category = c);
+                        },
+                      ),
                   ],
                 ),
                 const SizedBox(height: 16),

@@ -1,5 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter/material.dart';
+import 'package:gigflow/app/theme/app_theme_option.dart';
 import 'package:gigflow/app/theme/theme_cubit.dart';
 import 'package:gigflow/core/services/connectivity_cubit.dart';
 import 'package:gigflow/features/auth/domain/repositories/auth_repository.dart';
@@ -26,7 +26,7 @@ class MockTaskBloc extends MockBloc<TaskEvent, TaskState> implements TaskBloc {}
 class MockTaskFilterCubit extends MockCubit<TaskFilterState>
     implements TaskFilterCubit {}
 
-class MockThemeCubit extends MockCubit<ThemeMode> implements ThemeCubit {}
+class MockThemeCubit extends MockCubit<AppThemeOption> implements ThemeCubit {}
 
 class MockConnectivityCubit extends MockCubit<bool>
     implements ConnectivityCubit {}

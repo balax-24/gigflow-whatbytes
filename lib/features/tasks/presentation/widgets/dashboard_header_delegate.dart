@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gigflow/app/theme/app_theme_option.dart';
 import 'package:gigflow/app/theme/liquid_glass_theme.dart';
 import 'package:gigflow/core/widgets/liquid_glass_chrome.dart';
+import 'package:gigflow/features/tasks/domain/enums/task_category.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_status_filter.dart';
+import 'package:gigflow/features/tasks/domain/utils/relative_due.dart';
 import 'package:gigflow/features/tasks/domain/utils/shift_stats.dart';
 import 'package:gigflow/features/tasks/presentation/cubit/task_filter_state.dart';
 import 'package:gigflow/features/tasks/presentation/widgets/priority_style.dart';
 import 'package:intl/intl.dart';
 
 /// One pinned Tier-1 glass dock: greeting + shift progress (collapses on
-/// scroll) above search + status + priority filters (always pinned).
+/// scroll) above search + status + priority + category filters (pinned).
 /// Merging these keeps live blurs during scroll at 2 (dock + FAB).
 class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
   DashboardHeaderDelegate({
@@ -19,14 +22,15 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.scale,
     required this.now,
     required this.email,
-    required this.isDark,
+    required this.themeOption,
     required this.stats,
     required this.filter,
     required this.searchController,
-    required this.onThemeToggle,
-    required this.onLogout,
+    required this.onThemeCycle,
+    required this.onProfile,
     required this.onPriority,
     required this.onStatus,
+    required this.onCategory,
     required this.onQuery,
     required this.onClearQuery,
     this.onSeed,
@@ -37,14 +41,15 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
   final double scale;
   final DateTime now;
   final String email;
-  final bool isDark;
+  final AppThemeOption themeOption;
   final ShiftStats stats;
   final TaskFilterState filter;
   final TextEditingController searchController;
-  final VoidCallback onThemeToggle;
-  final VoidCallback onLogout;
+  final VoidCallback onThemeCycle;
+  final VoidCallback onProfile;
   final ValueChanged<TaskPriority?> onPriority;
   final ValueChanged<TaskStatusFilter> onStatus;
+  final ValueChanged<TaskCategory?> onCategory;
   final ValueChanged<String> onQuery;
   final VoidCallback onClearQuery;
   final VoidCallback? onSeed;
@@ -55,7 +60,7 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get _collapsibleHeight => _collapsible * scale;
 
   @override
-  double get minExtent => topPadding + 36 + 3 * _row * scale;
+  double get minExtent => topPadding + 38 + 4 * _row * scale;
 
   @override
   double get maxExtent => minExtent + _collapsibleHeight;
@@ -67,6 +72,7 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     final t = (shrinkOffset / _collapsibleHeight).clamp(0.0, 1.0);
+    final row = _row * scale;
     return SizedBox.expand(
       child: MediaQuery.withClampedTextScaling(
         maxScaleFactor: 1.3,
@@ -94,12 +100,12 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                 ),
               ),
               SizedBox(
-                height: _row * scale,
+                height: row,
                 child: _SearchField(delegate: this),
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: _row * scale,
+                height: row,
                 child: _ChipRow(
                   children: [
                     for (final s in TaskStatusFilter.values)
@@ -117,7 +123,7 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
               ),
               const SizedBox(height: 4),
               SizedBox(
-                height: _row * scale,
+                height: row,
                 child: _ChipRow(
                   children: [
                     SelectableChip(
@@ -144,6 +150,34 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ],
                 ),
               ),
+              const SizedBox(height: 4),
+              SizedBox(
+                height: row,
+                child: _ChipRow(
+                  children: [
+                    SelectableChip(
+                      key: const ValueKey('category-all'),
+                      tooltip: 'All categories',
+                      label: '🏷️ All',
+                      selected: filter.category == null,
+                      onSelected: () {
+                        HapticFeedback.selectionClick();
+                        onCategory(null);
+                      },
+                    ),
+                    for (final c in TaskCategory.values)
+                      SelectableChip(
+                        key: ValueKey('category-${c.name}'),
+                        label: '${c.emoji} ${c.label}',
+                        selected: filter.category == c,
+                        onSelected: () {
+                          HapticFeedback.selectionClick();
+                          onCategory(c);
+                        },
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -158,7 +192,7 @@ class DashboardHeaderDelegate extends SliverPersistentHeaderDelegate {
       oldDelegate.scale != scale ||
       oldDelegate.now != now ||
       oldDelegate.email != email ||
-      oldDelegate.isDark != isDark ||
+      oldDelegate.themeOption != themeOption ||
       oldDelegate.stats != stats ||
       oldDelegate.filter != filter;
 }
@@ -213,12 +247,11 @@ class _SummarySection extends StatelessWidget {
 
   final DashboardHeaderDelegate delegate;
 
-  String get _greeting {
-    final h = delegate.now.hour;
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  }
+  IconData get _themeIcon => switch (delegate.themeOption) {
+    AppThemeOption.dark => Icons.dark_mode_rounded,
+    AppThemeOption.light => Icons.light_mode_rounded,
+    AppThemeOption.lavender => Icons.auto_awesome_rounded,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -226,6 +259,8 @@ class _SummarySection extends StatelessWidget {
     final glass = context.glass;
     final stats = delegate.stats;
     final name = delegate.email.split('@').first;
+    final date = DateFormat('EEEE, d MMMM').format(delegate.now);
+    final option = delegate.themeOption;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -240,16 +275,17 @@ class _SummarySection extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        name.isEmpty ? _greeting : '$_greeting, $name',
+                        greetingFor(delegate.now),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                       Text(
-                        DateFormat('EEEE, d MMMM').format(delegate.now),
+                        name.isEmpty ? date : '$name · $date',
                         maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -259,21 +295,19 @@ class _SummarySection extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: delegate.isDark
-                    ? 'Switch to light mode'
-                    : 'Switch to dark mode',
-                icon: Icon(
-                  delegate.isDark
-                      ? Icons.light_mode_outlined
-                      : Icons.dark_mode_outlined,
-                ),
-                onPressed: delegate.onThemeToggle,
+                key: const ValueKey('theme-button'),
+                tooltip: 'Theme: ${option.label}. Tap for ${option.next.label}',
+                icon: Icon(_themeIcon),
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  delegate.onThemeCycle();
+                },
               ),
               IconButton(
-                key: const ValueKey('logout-button'),
-                tooltip: 'Sign out',
-                icon: const Icon(Icons.logout_rounded),
-                onPressed: delegate.onLogout,
+                key: const ValueKey('profile-button'),
+                tooltip: 'Profile & settings',
+                icon: const Icon(Icons.more_horiz_rounded),
+                onPressed: delegate.onProfile,
               ),
             ],
           ),
@@ -284,6 +318,8 @@ class _SummarySection extends StatelessWidget {
               child: Text(
                 stats.todayTotal == 0
                     ? 'Nothing due today'
+                    : stats.todayDone == stats.todayTotal
+                    ? 'Shift cleared 🎉 ${stats.todayDone}/${stats.todayTotal}'
                     : '${stats.todayDone} of ${stats.todayTotal} done today',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

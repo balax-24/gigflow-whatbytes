@@ -35,6 +35,21 @@ abstract final class AppTheme {
     LiquidGlassTheme.light,
   );
 
+  static ThemeData lavender() => _base(
+    ColorScheme.fromSeed(
+      seedColor: AppColors.lavenderAccent,
+      brightness: Brightness.light,
+    ).copyWith(
+      primary: AppColors.lavenderAccent,
+      onPrimary: Colors.white,
+      surface: AppColors.lavenderBg,
+      onSurface: AppColors.lavenderTextPrimary,
+      onSurfaceVariant: AppColors.lavenderTextSecondary,
+      error: AppColors.lightOverdue,
+    ),
+    LiquidGlassTheme.lavender,
+  );
+
   static ThemeData _base(ColorScheme scheme, LiquidGlassTheme glass) {
     final base = ThemeData(colorScheme: scheme);
     final outline = OutlineInputBorder(

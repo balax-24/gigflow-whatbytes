@@ -1,6 +1,6 @@
 import 'package:gigflow/features/tasks/domain/entities/task_entity.dart';
 
-enum TaskSection { pastDue, today, tomorrow, upcoming }
+enum TaskSection { pastDue, today, tomorrow, thisWeek, upcoming }
 
 final class TaskSectionGroup {
   const TaskSectionGroup(this.section, this.tasks);
@@ -14,7 +14,8 @@ final class TaskSectionGroup {
       tasks.any((t) => t.isOverdueAt(now)) ? 'OVERDUE' : 'EARLIER',
     TaskSection.today => 'TODAY',
     TaskSection.tomorrow => 'TOMORROW',
-    TaskSection.upcoming => 'UPCOMING',
+    TaskSection.thisWeek => 'THIS WEEK',
+    TaskSection.upcoming => 'LATER',
   };
 }
 
@@ -26,9 +27,11 @@ abstract final class DateGrouping {
     final n = now.toLocal();
     final startOfTomorrow = DateTime(n.year, n.month, n.day + 1);
     final startOfDayAfter = DateTime(n.year, n.month, n.day + 2);
+    final startOfNextWeek = DateTime(n.year, n.month, n.day + 7);
     if (d.isBefore(n)) return TaskSection.pastDue;
     if (d.isBefore(startOfTomorrow)) return TaskSection.today;
     if (d.isBefore(startOfDayAfter)) return TaskSection.tomorrow;
+    if (d.isBefore(startOfNextWeek)) return TaskSection.thisWeek;
     return TaskSection.upcoming;
   }
 

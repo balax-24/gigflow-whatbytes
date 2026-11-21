@@ -1,4 +1,5 @@
 import 'package:gigflow/features/tasks/domain/entities/task_entity.dart';
+import 'package:gigflow/features/tasks/domain/enums/task_category.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_status_filter.dart';
 
@@ -8,12 +9,17 @@ abstract final class TaskQueryEngine {
     required List<TaskEntity> tasks,
     TaskPriority? priorityFilter, // null == All
     TaskStatusFilter statusFilter = TaskStatusFilter.all,
+    TaskCategory? categoryFilter, // null == All
+    DateTime? dayFilter, // local calendar day; null == any day
     String searchQuery = '',
   }) {
     final query = searchQuery.trim().toLowerCase();
     final result = [
       for (final task in tasks)
-        if (_matches(task, priorityFilter, statusFilter, query)) task,
+        if (_matches(task, priorityFilter, statusFilter, query) &&
+            (categoryFilter == null || task.category == categoryFilter) &&
+            (dayFilter == null || isSameDay(task.dueDate, dayFilter)))
+          task,
     ]..sort(compare);
     return List.unmodifiable(result);
   }
@@ -46,6 +52,12 @@ abstract final class TaskQueryEngine {
     return task.title.toLowerCase().contains(query) ||
         task.description.toLowerCase().contains(query);
   }
+}
+
+bool isSameDay(DateTime a, DateTime b) {
+  final x = a.toLocal();
+  final y = b.toLocal();
+  return x.year == y.year && x.month == y.month && x.day == y.day;
 }
 
 /// Use everywhere a due date is produced (pickers, presets, edits).

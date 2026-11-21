@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gigflow/features/tasks/domain/enums/task_category.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_status_filter.dart';
 import 'package:gigflow/features/tasks/presentation/cubit/task_filter_cubit.dart';
@@ -17,9 +18,13 @@ void main() {
     when(() => prefs.readStatus()).thenReturn(TaskStatusFilter.incomplete);
     when(() => prefs.writePriority(any())).thenAnswer((_) async {});
     when(() => prefs.writeStatus(any())).thenAnswer((_) async {});
+    when(() => prefs.writeCategory(any())).thenAnswer((_) async {});
   });
 
-  setUpAll(() => registerFallbackValue(TaskStatusFilter.all));
+  setUpAll(() {
+    registerFallbackValue(TaskStatusFilter.all);
+    registerFallbackValue(TaskCategory.general);
+  });
 
   test('loads persisted values', () {
     expect(
@@ -60,5 +65,36 @@ void main() {
     ),
     act: (c) => c.clearAll(),
     expect: () => const [TaskFilterState()],
+  );
+
+  blocTest<TaskFilterCubit, TaskFilterState>(
+    'category persists and day toggles on/off',
+    build: () => TaskFilterCubit(prefs),
+    act: (c) async {
+      await c.setCategory(TaskCategory.delivery);
+      c
+        ..toggleDay(DateTime(2026, 11, 23, 15))
+        ..toggleDay(DateTime(2026, 11, 23, 9));
+    },
+    expect: () => [
+      const TaskFilterState(
+        priority: TaskPriority.high,
+        status: TaskStatusFilter.incomplete,
+        category: TaskCategory.delivery,
+      ),
+      TaskFilterState(
+        priority: TaskPriority.high,
+        status: TaskStatusFilter.incomplete,
+        category: TaskCategory.delivery,
+        day: DateTime(2026, 11, 23),
+      ),
+      const TaskFilterState(
+        priority: TaskPriority.high,
+        status: TaskStatusFilter.incomplete,
+        category: TaskCategory.delivery,
+      ),
+    ],
+    verify: (_) =>
+        verify(() => prefs.writeCategory(TaskCategory.delivery)).called(1),
   );
 }

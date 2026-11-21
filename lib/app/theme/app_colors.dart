@@ -28,6 +28,18 @@ abstract final class AppColors {
   static const lightAccent = Color(0xFF0369A1);
   static const lightOnAccent = Color(0xFFFFFFFF);
 
+  // Lavender — soft purple light theme (all text pairs >= 4.9:1)
+  static const lavenderBg = Color(0xFFF4F1FF);
+  static const lavenderTextPrimary = Color(0xFF1E1B3A);
+  static const lavenderTextSecondary = Color(0xFF4B4770);
+  static const lavenderTextMuted = Color(0xFF5E5A80);
+  static const lavenderAccent = Color(0xFF5B4FD8);
+  static const lavenderOrbs = [
+    Color(0x668B7CF6), // violet 40%
+    Color(0x73C4B5FD), // lilac 45%
+    Color(0x4DF0ABFC), // pink 30%
+  ];
+
   static const darkOrbs = [
     Color(0x3D3B82F6), // cobalt 24% top-left
     Color(0x296366F1), // indigo 16% center-right

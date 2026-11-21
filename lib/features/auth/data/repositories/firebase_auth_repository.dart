@@ -40,6 +40,38 @@ class FirebaseAuthRepository implements AuthRepository {
   );
 
   @override
+  Future<void> sendPasswordReset({required String email}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException catch (e) {
+      throw AuthFailure(
+        FirebaseErrorMapper.mapAuthErrorCode(e.code),
+        code: e.code,
+      );
+    } catch (_) {
+      throw const AuthFailure(FirebaseErrorMapper.genericAuth);
+    }
+  }
+
+  @override
+  Future<AppUser?> signInWithGoogle() async {
+    try {
+      final provider = GoogleAuthProvider()
+        ..addScope('email')
+        ..setCustomParameters({'prompt': 'select_account'});
+      return _toUser((await _auth.signInWithProvider(provider)).user);
+    } on FirebaseAuthException catch (e) {
+      if (FirebaseErrorMapper.isUserCancellation(e.code)) return null;
+      throw AuthFailure(
+        FirebaseErrorMapper.mapAuthErrorCode(e.code),
+        code: e.code,
+      );
+    } catch (_) {
+      throw const AuthFailure(FirebaseErrorMapper.genericAuth);
+    }
+  }
+
+  @override
   Future<void> signOut() => _auth.signOut();
 
   Future<AppUser> _run(Future<UserCredential> Function() call) async {

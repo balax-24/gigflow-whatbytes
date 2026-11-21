@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:gigflow/features/tasks/domain/entities/task_entity.dart';
+import 'package:gigflow/features/tasks/domain/enums/task_category.dart';
 import 'package:gigflow/features/tasks/domain/enums/task_priority.dart';
 
 /// Pure mapper between Firestore maps and [TaskEntity].
@@ -16,6 +17,7 @@ abstract final class TaskModel {
     final title = data['title'];
     final description = data['description'];
     final priority = data['priority'];
+    final category = data['category'];
     return TaskEntity(
       id: id,
       title: title is String ? title.trim() : '',
@@ -23,6 +25,7 @@ abstract final class TaskModel {
       dueDate: _readDate(data['dueDate']) ?? createdAt,
       priority: TaskPriority.fromName(priority is String ? priority : null),
       isCompleted: data['isCompleted'] == true,
+      category: TaskCategory.fromName(category is String ? category : null),
       createdAt: createdAt,
       updatedAt: _readDate(data['updatedAt']) ?? createdAt,
     );
@@ -34,6 +37,7 @@ abstract final class TaskModel {
     'dueDate': Timestamp.fromDate(task.dueDate.toUtc()),
     'priority': task.priority.name,
     'isCompleted': task.isCompleted,
+    'category': task.category.name,
     'createdAt': Timestamp.fromDate(task.createdAt.toUtc()),
     'updatedAt': Timestamp.fromDate(task.updatedAt.toUtc()),
   };

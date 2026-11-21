@@ -3,11 +3,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:gigflow/app/theme/app_theme_option.dart';
 import 'package:gigflow/app/theme/theme_cubit.dart';
 import 'package:gigflow/core/services/connectivity_cubit.dart';
 import 'package:gigflow/core/services/sync_status.dart';
+import 'package:gigflow/core/widgets/confetti_burst.dart';
 import 'package:gigflow/dev/demo_seeder.dart';
 import 'package:gigflow/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:gigflow/features/tasks/domain/entities/task_entity.dart';
@@ -24,9 +26,11 @@ import 'package:gigflow/features/tasks/presentation/screens/task_editor_sheet.da
 import 'package:gigflow/features/tasks/presentation/widgets/dashboard_header_delegate.dart';
 import 'package:gigflow/features/tasks/presentation/widgets/empty_tasks_view.dart';
 import 'package:gigflow/features/tasks/presentation/widgets/new_task_fab.dart';
+import 'package:gigflow/features/tasks/presentation/widgets/profile_sheet.dart';
 import 'package:gigflow/features/tasks/presentation/widgets/sync_status_pill.dart';
 import 'package:gigflow/features/tasks/presentation/widgets/task_section_header.dart';
 import 'package:gigflow/features/tasks/presentation/widgets/task_tile.dart';
+import 'package:gigflow/features/tasks/presentation/widgets/week_strip.dart';
 
 class TaskDashboardScreen extends StatefulWidget {
   const TaskDashboardScreen({super.key, this.clock = DateTime.now});
@@ -43,6 +47,8 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
   Timer? _ticker;
   late final AppLifecycleListener _lifecycle;
   final _search = TextEditingController();
+  int _confettiRun = 0;
+  bool _showConfetti = false;
 
   @override
   void initState() {
@@ -92,6 +98,35 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
     if (confirmed == true) authBloc.add(const AuthLogoutRequested());
   }
 
+  void _celebrate() {
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _confettiRun++;
+      _showConfetti = true;
+    });
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Shift cleared 🎉 Every task due today is done. Legend.",
+          ),
+          duration: Duration(seconds: 3),
+        ),
+      );
+  }
+
+  void _openProfile(ShiftStats stats, int total) {
+    showProfileSheet(
+      context,
+      email: context.read<AuthBloc>().state.user?.email ?? '',
+      stats: stats,
+      totalTasks: total,
+      themeCubit: context.read<ThemeCubit>(),
+      onSignOut: _confirmLogout,
+    );
+  }
+
   void _clearFilters() {
     _search.clear();
     context.read<TaskFilterCubit>().clearAll();
@@ -110,15 +145,28 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
-      body: BlocListener<TaskBloc, TaskState>(
-        listenWhen: (a, b) =>
-            b.errorMessage != null && a.errorMessage != b.errorMessage,
-        listener: (context, state) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-          context.read<TaskBloc>().add(const TaskErrorDismissed());
-        },
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<TaskBloc, TaskState>(
+            listenWhen: (a, b) =>
+                b.errorMessage != null && a.errorMessage != b.errorMessage,
+            listener: (context, state) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+              context.read<TaskBloc>().add(const TaskErrorDismissed());
+            },
+          ),
+          BlocListener<TaskBloc, TaskState>(
+            listenWhen: (a, b) =>
+                a.status == TaskLoadStatus.ready &&
+                ShiftStats.justCleared(
+                  ShiftStats.compute(a.visibleTasks, _now),
+                  ShiftStats.compute(b.visibleTasks, _now),
+                ),
+            listener: (_, _) => _celebrate(),
+          ),
+        ],
         child: Stack(
           children: [
             BlocBuilder<TaskBloc, TaskState>(
@@ -151,6 +199,16 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
               bottom: padding.bottom + 16,
               child: NewTaskFab(onPressed: () => showTaskEditorSheet(context)),
             ),
+            if (_showConfetti)
+              Positioned.fill(
+                child: ConfettiBurst(
+                  key: ValueKey('confetti-$_confettiRun'),
+                  seed: _confettiRun,
+                  onDone: () {
+                    if (mounted) setState(() => _showConfetti = false);
+                  },
+                ),
+              ),
           ],
         ),
       ),
@@ -171,8 +229,11 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
       tasks: all,
       priorityFilter: filter.priority,
       statusFilter: filter.status,
+      categoryFilter: filter.category,
+      dayFilter: filter.day,
       searchQuery: filter.query,
     );
+    final stats = ShiftStats.compute(all, _now);
     final groups = DateGrouping.group(visible, _now);
     final rows = <_Row>[
       for (final g in groups) ...[
@@ -187,8 +248,8 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
     final user = context.select<AuthBloc, String>(
       (b) => b.state.user?.email ?? '',
     );
-    final isDark = context.select<ThemeCubit, bool>(
-      (c) => c.state != ThemeMode.light,
+    final themeOption = context.select<ThemeCubit, AppThemeOption>(
+      (c) => c.state,
     );
 
     final Widget content;
@@ -243,14 +304,15 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
             scale: scale,
             now: _now,
             email: user,
-            isDark: isDark,
-            stats: ShiftStats.compute(all, _now),
+            themeOption: themeOption,
+            stats: stats,
             filter: filter,
             searchController: _search,
-            onThemeToggle: () => context.read<ThemeCubit>().toggle(),
-            onLogout: _confirmLogout,
+            onThemeCycle: () => context.read<ThemeCubit>().cycle(),
+            onProfile: () => _openProfile(stats, all.length),
             onPriority: filterCubit.setPriority,
             onStatus: filterCubit.setStatus,
+            onCategory: filterCubit.setCategory,
             onQuery: filterCubit.setQuery,
             onClearQuery: () {
               _search.clear();
@@ -264,6 +326,18 @@ class _TaskDashboardScreenState extends State<TaskDashboardScreen> {
                   },
           ),
         ),
+        if (taskState.status == TaskLoadStatus.ready)
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(horizontal, 10, horizontal, 0),
+            sliver: SliverToBoxAdapter(
+              child: WeekStrip(
+                now: _now,
+                tasks: all,
+                selectedDay: filter.day,
+                onDayTap: filterCubit.toggleDay,
+              ),
+            ),
+          ),
         SliverPadding(
           padding: EdgeInsets.fromLTRB(
             horizontal,

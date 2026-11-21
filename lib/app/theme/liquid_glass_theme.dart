@@ -72,6 +72,23 @@ class LiquidGlassTheme extends ThemeExtension<LiquidGlassTheme> {
     orbs: AppColors.lightOrbs,
   );
 
+  static const lavender = LiquidGlassTheme(
+    background: AppColors.lavenderBg,
+    cardFill: [Color(0xE6FFFFFF), Color(0xBFFFFFFF)],
+    chromeFill: [Color(0xBFFFFFFF), Color(0x99FFFFFF)],
+    rimHighlight: Color(0xFFFFFFFF),
+    rimShade: Color(0x405B4FD8),
+    shadow: Color(0x1F5B4FD8),
+    blurSigma: 16,
+    priorityHigh: AppColors.lightPriorityHigh,
+    priorityMedium: AppColors.lightPriorityMedium,
+    priorityLow: AppColors.lightPriorityLow,
+    complete: AppColors.lightComplete,
+    overdue: AppColors.lightOverdue,
+    textMuted: AppColors.lavenderTextMuted,
+    orbs: AppColors.lavenderOrbs,
+  );
+
   @override
   LiquidGlassTheme copyWith() => this;
 

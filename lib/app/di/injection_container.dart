@@ -57,7 +57,12 @@ Future<void> initDependencies() async {
       (uid, _) => TaskBloc(repository: sl(), userId: uid),
     )
     ..registerLazySingleton<AppRouter>(
-      () => AppRouter(sl(), (uid) => sl<TaskBloc>(param1: uid)),
+      () => AppRouter(
+        sl(),
+        (uid) => sl<TaskBloc>(param1: uid),
+        onboardingSeen: () =>
+            sl<LocalPreferencesDataSource>().readOnboardingSeen(),
+      ),
       dispose: (r) => r.dispose(),
     );
 }
