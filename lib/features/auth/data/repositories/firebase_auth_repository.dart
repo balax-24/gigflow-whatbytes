@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:gigflow/core/config/google_oauth.dart';
 import 'package:gigflow/core/error/failures.dart';
 import 'package:gigflow/core/error/firebase_error_mapper.dart';
@@ -79,14 +79,18 @@ class FirebaseAuthRepository implements AuthRepository {
       final credential = GoogleAuthProvider.credential(idToken: idToken);
       return _toUser((await _auth.signInWithCredential(credential)).user);
     } on GoogleSignInException catch (e) {
-      debugPrint('GigFlow Google sign-in failed: ${e.code.name}');
+      if (kDebugMode) {
+        debugPrint('GigFlow Google sign-in failed: ${e.code.name}');
+      }
       if (e.code == GoogleSignInExceptionCode.canceled ||
           e.code == GoogleSignInExceptionCode.interrupted) {
         return null;
       }
       throw const AuthFailure(FirebaseErrorMapper.googleUnavailable);
     } on FirebaseAuthException catch (e) {
-      debugPrint('GigFlow Google credential rejected: ${e.code}');
+      if (kDebugMode) {
+        debugPrint('GigFlow Google credential rejected: ${e.code}');
+      }
       throw AuthFailure(
         FirebaseErrorMapper.mapAuthErrorCode(e.code),
         code: e.code,
@@ -94,7 +98,9 @@ class FirebaseAuthRepository implements AuthRepository {
     } on AuthFailure {
       rethrow;
     } catch (e) {
-      debugPrint('GigFlow Google sign-in unexpected error: ${e.runtimeType}');
+      if (kDebugMode) {
+        debugPrint('GigFlow Google sign-in unexpected error: ${e.runtimeType}');
+      }
       throw const AuthFailure(FirebaseErrorMapper.googleUnavailable);
     }
   }

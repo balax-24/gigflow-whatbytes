@@ -22,9 +22,16 @@ service cloud.firestore {
           && data.updatedAt is timestamp;
     }
 
+    // Tenant isolation: a signed-in user can only touch their own subtree.
     match /users/{userId}/tasks/{taskId} {
       allow read, delete: if isOwner(userId);
-      allow create, update: if isOwner(userId) && isValidTask(request.resource.data);
+      allow create: if isOwner(userId)
+                    && taskId.size() <= 128
+                    && isValidTask(request.resource.data);
+      // Integrity: createdAt is immutable once written.
+      allow update: if isOwner(userId)
+                    && isValidTask(request.resource.data)
+                    && request.resource.data.createdAt == resource.data.createdAt;
     }
 
     match /{document=**} {
